@@ -81,4 +81,3 @@ dumps = partial(json.dumps, cls=JSONSerializer)
 loads = partial(json.loads, object_hook=json_deserializer)
 dump = partial(json.dump, cls=JSONSerializer)
 load = partial(json.load, object_hook=json_deserializer)
-

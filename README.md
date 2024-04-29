@@ -1,6 +1,6 @@
 # Extended JSON Encoder
 
-This Python package provides an extended JSON encoder class, `JSONSerializer`, that enables encoding of complex Python data types such as `datetime.datetime`, `datetime.date`, `datetime.time`, `bytes` and `uuid`. It also supports objects that have a `to_json` method, allowing for customizable JSON encoding.
+The `json-advanced` is Python package provides an extended JSON encoder class, `JSONSerializer`, that enables encoding of complex Python data types such as `datetime.datetime`, `datetime.date`, `datetime.time`, `bytes` and `uuid`. It also supports objects that have a `to_json` method, allowing for customizable JSON encoding.
 
 ## Features
 
@@ -14,7 +14,7 @@ This Python package provides an extended JSON encoder class, `JSONSerializer`, t
 You can install the package directly from source:
 
 ```bash
-pip install extended_json
+pip install json-advanced
 ```
 
 ## Usage

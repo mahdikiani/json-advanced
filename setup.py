@@ -21,7 +21,7 @@ def get_long_description():
 
 
 setup(
-    name="extended_json",
+    name="json-advanced",
     version=get_version("extended_json"),
     python_requires=">=3",
     url="https://github.com/mahdikiani/extended-json",
