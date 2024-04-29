@@ -22,9 +22,9 @@ def get_long_description():
 
 setup(
     name="json-advanced",
-    version=get_version("extended_json"),
+    version=get_version("json-advanced"),
     python_requires=">=3",
-    url="https://github.com/mahdikiani/extended-json",
+    url="https://github.com/mahdikiani/json-advanced",
     license="MIT License",
     description="This Python package provides an extended JSON encoder class, `JSONSerializer`, that enables encoding of complex Python data types such as `datetime.datetime`, `datetime.date`, `datetime.time`, `bytes` and `uuid`. It also supports objects that have a `to_json` method, allowing for customizable JSON encoding.",
     long_description=get_long_description(),
