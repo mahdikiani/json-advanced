@@ -25,7 +25,7 @@ import json
 import datetime
 import uuid
 
-from extended_json import JSONSerializer
+from json_advanced.json_encoder import JSONSerializer
 
 # Example object containing various complex data types
 data = {

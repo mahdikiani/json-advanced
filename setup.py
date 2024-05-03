@@ -22,7 +22,7 @@ def get_long_description():
 
 setup(
     name="json-advanced",
-    version=get_version("json-advanced"),
+    version=get_version("json_advanced"),
     python_requires=">=3",
     url="https://github.com/mahdikiani/json-advanced",
     license="MIT License",
