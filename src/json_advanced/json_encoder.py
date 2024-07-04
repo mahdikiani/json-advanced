@@ -4,6 +4,7 @@ import json
 import re
 import uuid
 from functools import partial
+from pathlib import Path
 
 
 class JSONSerializer(json.JSONEncoder):
@@ -18,6 +19,8 @@ class JSONSerializer(json.JSONEncoder):
             return str(obj)
         if isinstance(obj, bytes):
             return f'b64:{base64.b64encode(obj).decode("utf-8")}'
+        if isinstance(obj, Path):
+            return str(obj)
         if hasattr(obj, "to_json"):
             return obj.to_json()
         return super().default(obj)

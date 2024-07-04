@@ -1,7 +1,7 @@
 import json
 import unittest
 
-from json_encoder import JSONSerializer, dumps, json_deserializer, loads
+from json_advanced.json_encoder import JSONSerializer, dumps, json_deserializer, loads
 
 
 class TestJSONSerialization(unittest.TestCase):
@@ -15,6 +15,17 @@ class TestJSONSerialization(unittest.TestCase):
         }
         json_string = dumps(data)
         self.assertEqual(loads(json_string), data)
+        print("test_normal passed")
+
+    def test_path(self):
+        from pathlib import Path
+
+        data = {
+            "path": Path("/path/to/file"),
+        }
+        json_string = dumps(data)
+        self.assertEqual(Path(loads(json_string).get("path")), data.get("path"))
+        print("test_path passed")
 
     def test_datetime(self):
         import datetime
@@ -26,6 +37,7 @@ class TestJSONSerialization(unittest.TestCase):
         }
         json_string = dumps(data)
         self.assertEqual(loads(json_string), data)
+        print("test_datetime passed")
 
     def test_date(self):
         import datetime
@@ -35,6 +47,7 @@ class TestJSONSerialization(unittest.TestCase):
         }
         json_string = json.dumps(data, cls=JSONSerializer)
         self.assertEqual(json.loads(json_string, object_hook=json_deserializer), data)
+        print("test_date passed")
 
     def test_time(self):
         import datetime
@@ -44,6 +57,7 @@ class TestJSONSerialization(unittest.TestCase):
         }
         json_string = json.dumps(data, cls=JSONSerializer)
         self.assertEqual(json.loads(json_string, object_hook=json_deserializer), data)
+        print("test_time passed")
 
     def test_base64(self):
         data = {
@@ -51,6 +65,7 @@ class TestJSONSerialization(unittest.TestCase):
         }
         json_string = dumps(data)
         self.assertEqual(loads(json_string), data)
+        print("test_base64 passed")
 
     def test_uuid(self):
         import uuid
@@ -60,6 +75,7 @@ class TestJSONSerialization(unittest.TestCase):
         }
         json_string = dumps(data)
         self.assertEqual(loads(json_string), data)
+        print("test_uuid passed")
 
     def test_dumps_loads(self):
         data = {
@@ -71,6 +87,7 @@ class TestJSONSerialization(unittest.TestCase):
         }
         json_string = dumps(data)
         self.assertEqual(loads(json_string), data)
+        print("test_dumps_loads passed")
 
 
 if __name__ == "__main__":
