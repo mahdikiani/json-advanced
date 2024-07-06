@@ -6,6 +6,11 @@ import uuid
 from functools import partial
 from pathlib import Path
 
+try:
+    from pydantic import BaseModel
+except ImportError:
+    BaseModel = None
+
 
 class JSONSerializer(json.JSONEncoder):
     def default(self, obj):
@@ -23,6 +28,8 @@ class JSONSerializer(json.JSONEncoder):
             return str(obj)
         if hasattr(obj, "to_json"):
             return obj.to_json()
+        if BaseModel and isinstance(obj, BaseModel):
+            return obj.model_dump()
         return super().default(obj)
 
 

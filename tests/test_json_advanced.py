@@ -100,6 +100,23 @@ class TestJSONSerialization(unittest.TestCase):
         self.assertEqual(loads(json_string), data)
         print("test_dumps_loads passed")
 
+    def test_pydantic(self):
+        from pydantic import BaseModel, Field
+        import uuid
+        import datetime
+
+        class Item(BaseModel):
+            uid: uuid.UUID = Field(default_factory=uuid.uuid4)
+            at: datetime.datetime = Field(default_factory=datetime.datetime.now)
+            name: str
+            price: float
+            is_offer: bool | None = None
+
+        data = Item(name="item", price=1.0)
+        json_string = dumps(data)
+        self.assertEqual(loads(json_string), data.model_dump())
+        print("test_pydantic passed")
+
 
 if __name__ == "__main__":
     unittest.main()
