@@ -1,12 +1,8 @@
 import json
 import unittest
 
-from json_advanced.json_encoder import (
-    JSONSerializer,
-    dumps,
-    json_deserializer,
-    loads,
-)
+from json_advanced.json_encoder import (JSONSerializer, dumps,
+                                        json_deserializer, loads)
 
 
 class TestJSONSerialization(unittest.TestCase):
@@ -101,9 +97,10 @@ class TestJSONSerialization(unittest.TestCase):
         print("test_dumps_loads passed")
 
     def test_pydantic(self):
-        from pydantic import BaseModel, Field
-        import uuid
         import datetime
+        import uuid
+
+        from pydantic import BaseModel, Field
 
         class Item(BaseModel):
             uid: uuid.UUID = Field(default_factory=uuid.uuid4)

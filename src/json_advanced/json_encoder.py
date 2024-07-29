@@ -30,6 +30,8 @@ class JSONSerializer(json.JSONEncoder):
             return obj.to_json()
         if BaseModel and isinstance(obj, BaseModel):
             return obj.model_dump()
+        if isinstance(obj, Exception):
+            return repr(obj)
         return super().default(obj)
 
 

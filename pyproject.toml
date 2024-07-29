@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"  # If not defined, then legacy behavior 
 
 [project]
 name = "json-advanced" 
-version = "0.8.0" 
+version = "0.9.0" 
 description = "This Python package provides an extended JSON encoder class, `JSONSerializer`, that enables encoding of complex Python data types such as `datetime.datetime`, `datetime.date`, `datetime.time`, `bytes` and `uuid`. It also supports objects that have a `to_json` method, allowing for customizable JSON encoding."
 readme = "README.md"
 requires-python = ">=3"
