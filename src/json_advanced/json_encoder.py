@@ -5,6 +5,7 @@ import re
 import uuid
 from functools import partial
 from pathlib import Path
+from decimal import Decimal
 
 try:
     from pydantic import BaseModel
@@ -32,6 +33,8 @@ class JSONSerializer(json.JSONEncoder):
             return obj.model_dump()
         if isinstance(obj, Exception):
             return repr(obj)
+        if isinstance(obj, Decimal):
+            return str(obj)
         return super().default(obj)
 
 
