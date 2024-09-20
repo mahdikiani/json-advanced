@@ -67,7 +67,7 @@ class JSONSerializer(json.JSONEncoder):
         if np and isinstance(obj, np.ndarray):
             return obj.tolist()
         if pd and isinstance(obj, pd.Series):
-            return obj.to_json()
+            return obj.to_dict()
         return super().default(obj)
 
 
