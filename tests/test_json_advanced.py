@@ -1,8 +1,7 @@
 import json
 import unittest
 
-from json_advanced.json_encoder import (JSONSerializer, dumps,
-                                        json_deserializer, loads)
+from json_advanced.json_encoder import JSONSerializer, dumps, json_deserializer, loads
 
 
 class TestJSONSerialization(unittest.TestCase):
@@ -25,9 +24,7 @@ class TestJSONSerialization(unittest.TestCase):
             "path": Path("/path/to/file"),
         }
         json_string = dumps(data)
-        self.assertEqual(
-            Path(loads(json_string).get("path")), data.get("path")
-        )
+        self.assertEqual(Path(loads(json_string).get("path")), data.get("path"))
         print("test_path passed")
 
     def test_datetime(self):
@@ -49,9 +46,7 @@ class TestJSONSerialization(unittest.TestCase):
             "date": datetime.date.today(),
         }
         json_string = json.dumps(data, cls=JSONSerializer)
-        self.assertEqual(
-            json.loads(json_string, object_hook=json_deserializer), data
-        )
+        self.assertEqual(json.loads(json_string, object_hook=json_deserializer), data)
         print("test_date passed")
 
     def test_time(self):
@@ -61,9 +56,7 @@ class TestJSONSerialization(unittest.TestCase):
             "time": datetime.datetime.now().time(),
         }
         json_string = json.dumps(data, cls=JSONSerializer)
-        self.assertEqual(
-            json.loads(json_string, object_hook=json_deserializer), data
-        )
+        self.assertEqual(json.loads(json_string, object_hook=json_deserializer), data)
         print("test_time passed")
 
     def test_base64(self):

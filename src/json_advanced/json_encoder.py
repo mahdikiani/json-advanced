@@ -3,14 +3,24 @@ import datetime
 import json
 import re
 import uuid
+from decimal import Decimal
 from functools import partial
 from pathlib import Path
-from decimal import Decimal
 
 try:
     from pydantic import BaseModel
 except ImportError:
     BaseModel = None
+
+try:
+    from beanie import PydanticObjectId
+except ImportError:
+    PydanticObjectId = None
+
+try:
+    from bson import Decimal128
+except ImportError:
+    Decimal128 = None
 
 
 class JSONSerializer(json.JSONEncoder):
@@ -31,6 +41,10 @@ class JSONSerializer(json.JSONEncoder):
             return obj.to_json()
         if BaseModel and isinstance(obj, BaseModel):
             return obj.model_dump()
+        if PydanticObjectId and isinstance(obj, PydanticObjectId):
+            return str(obj)
+        if Decimal128 and isinstance(obj, Decimal128):
+            return str(obj)
         if isinstance(obj, Exception):
             return repr(obj)
         if isinstance(obj, Decimal):
@@ -93,7 +107,18 @@ def json_deserializer(dct):
     return dct
 
 
-dumps = partial(json.dumps, cls=JSONSerializer)
-loads = partial(json.loads, object_hook=json_deserializer)
-dump = partial(json.dump, cls=JSONSerializer)
-load = partial(json.load, object_hook=json_deserializer)
+def dumps(*args, **kwargs):
+    kwargs.setdefault("cls", JSONSerializer)
+    return json.dumps(*args, **kwargs)
+
+def dump(*args, **kwargs):
+    kwargs.setdefault("cls", JSONSerializer)
+    return json.dump(*args, **kwargs)
+
+def loads(*args, **kwargs):
+    kwargs.setdefault("object_hook", json_deserializer)
+    return json.loads(*args, **kwargs)
+
+def load(*args, **kwargs):
+    kwargs.setdefault("object_hook", json_deserializer)
+    return json.load(*args, **kwargs)
