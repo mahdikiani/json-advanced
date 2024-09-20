@@ -4,7 +4,6 @@ import json
 import re
 import uuid
 from decimal import Decimal
-from functools import partial
 from pathlib import Path
 
 try:
@@ -13,18 +12,31 @@ except ImportError:
     BaseModel = None
 
 try:
-    from beanie import PydanticObjectId
-except ImportError:
-    PydanticObjectId = None
-
-try:
-    from bson import Decimal128
+    from bson import Decimal128, ObjectId
 except ImportError:
     Decimal128 = None
+    ObjectId = None
+
+try:
+    import numpy as np
+except ImportError:
+    np = None
 
 
 class JSONSerializer(json.JSONEncoder):
     def default(self, obj):
+        # Text Type:	str
+        # Numeric Types:	int, float, complex
+        # Sequence Types:	list, tuple, range
+        # Mapping Type:	dict
+        # Set Types:	set, frozenset
+        # Boolean Type:	bool
+        # Binary Types:	bytes, bytearray, memoryview
+        # None Type:	NoneType
+        if isinstance(obj, (str, int, float, complex, list, tuple, range, dict, set, frozenset, bool, type(None))):
+            return obj
+        if isinstance(obj, (bytes, bytearray, memoryview)):
+            return f'b64:{base64.b64encode(bytes(obj)).decode("utf-8")}'
         if isinstance(obj, datetime.datetime):
             return obj.strftime("%Y-%m-%d %H:%M:%S.%f")
         if isinstance(obj, datetime.date):
@@ -33,15 +45,13 @@ class JSONSerializer(json.JSONEncoder):
             return obj.strftime("%H:%M:%S.%f")
         if isinstance(obj, uuid.UUID):
             return str(obj)
-        if isinstance(obj, bytes):
-            return f'b64:{base64.b64encode(obj).decode("utf-8")}'
         if isinstance(obj, Path):
             return str(obj)
         if hasattr(obj, "to_json"):
             return obj.to_json()
         if BaseModel and isinstance(obj, BaseModel):
             return obj.model_dump()
-        if PydanticObjectId and isinstance(obj, PydanticObjectId):
+        if ObjectId and isinstance(obj, ObjectId):
             return str(obj)
         if Decimal128 and isinstance(obj, Decimal128):
             return str(obj)
@@ -49,6 +59,8 @@ class JSONSerializer(json.JSONEncoder):
             return repr(obj)
         if isinstance(obj, Decimal):
             return str(obj)
+        if np and isinstance(obj, np.ndarray):
+            return obj.tolist()
         return super().default(obj)
 
 
