@@ -93,7 +93,10 @@ class TestJSONSerialization(unittest.TestCase):
         import datetime
         import uuid
 
-        from pydantic import BaseModel, Field
+        try:
+            from pydantic import BaseModel, Field
+        except ImportError:
+            return
 
         class Item(BaseModel):
             uid: uuid.UUID = Field(default_factory=uuid.uuid4)
