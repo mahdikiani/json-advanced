@@ -38,7 +38,23 @@ class JSONSerializer(json.JSONEncoder):
         # Boolean Type:	bool
         # Binary Types:	bytes, bytearray, memoryview
         # None Type:	NoneType
-        if isinstance(obj, (str, int, float, complex, list, tuple, range, dict, set, frozenset, bool, type(None))):
+        if isinstance(
+            obj,
+            (
+                str,
+                int,
+                float,
+                complex,
+                list,
+                tuple,
+                range,
+                dict,
+                set,
+                frozenset,
+                bool,
+                type(None),
+            ),
+        ):
             return obj
         if isinstance(obj, (bytes, bytearray, memoryview)):
             return f'b64:{base64.b64encode(bytes(obj)).decode("utf-8")}'
@@ -130,13 +146,16 @@ def dumps(*args, **kwargs):
     kwargs.setdefault("cls", JSONSerializer)
     return json.dumps(*args, **kwargs)
 
+
 def dump(*args, **kwargs):
     kwargs.setdefault("cls", JSONSerializer)
     return json.dump(*args, **kwargs)
 
+
 def loads(*args, **kwargs):
     kwargs.setdefault("object_hook", json_deserializer)
     return json.loads(*args, **kwargs)
+
 
 def load(*args, **kwargs):
     kwargs.setdefault("object_hook", json_deserializer)
