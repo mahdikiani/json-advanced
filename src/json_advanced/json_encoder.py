@@ -59,7 +59,7 @@ class JSONSerializer(json.JSONEncoder):
         if isinstance(obj, (bytes, bytearray, memoryview)):
             return f'b64:{base64.b64encode(bytes(obj)).decode("utf-8")}'
         if isinstance(obj, datetime.datetime):
-            return obj.strftime("%Y-%m-%d %H:%M:%S.%f")
+            return obj.isoformat()
         if isinstance(obj, datetime.date):
             return obj.strftime("%Y-%m-%d")
         if isinstance(obj, datetime.time):
@@ -112,7 +112,7 @@ def json_deserializer(dct):
             # Datetime conversion
             datetime_patterns = [
                 (
-                    r"^(\d{2,4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2}(\.\d+))$",
+                    r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?$",
                     "%Y-%m-%d %H:%M:%S.%f",
                     lambda dt: dt,
                 ),
