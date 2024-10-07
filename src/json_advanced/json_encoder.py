@@ -113,7 +113,7 @@ def json_deserializer(dct):
             datetime_patterns = [
                 (
                     r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?$",
-                    "%Y-%m-%d %H:%M:%S.%f",
+                    "%Y-%m-%dT%H:%M:%S.%f",
                     lambda dt: dt,
                 ),
                 (
