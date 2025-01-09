@@ -1,9 +1,11 @@
+import asyncio
 import base64
 import datetime
 import json
 import re
 import uuid
 from decimal import Decimal
+from io import BytesIO
 from pathlib import Path
 
 try:
@@ -26,6 +28,11 @@ try:
     import pandas as pd
 except ImportError:
     pd = None
+
+try:
+    from PIL import Image
+except ImportError:
+    Image = None
 
 
 class JSONSerializer(json.JSONEncoder):
@@ -55,9 +62,21 @@ class JSONSerializer(json.JSONEncoder):
                 type(None),
             ),
         ):
-            return obj
+            return str(obj)
         if isinstance(obj, (bytes, bytearray, memoryview)):
-            return f'b64:{base64.b64encode(bytes(obj)).decode("utf-8")}'
+            base64_str = base64.b64encode(bytes(obj)).decode("utf-8")
+            return f"data:application/octet-stream;base64,{base64_str}"
+        if isinstance(obj, BytesIO):
+            base64_str = base64.b64encode(obj.getvalue()).decode("utf-8")
+            return f'data:application/octet-stream;base64,{base64.b64encode(obj.getvalue()).decode("utf-8")}'
+        if Image and isinstance(obj, Image.Image):
+            buffered = BytesIO()
+            format = (
+                getattr(obj, "format", "PNG") or "PNG"
+            )  # Get original format or default to PNG
+            obj.save(buffered, format=format)
+            base64_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
+            return f"data:image/{format.lower()};base64,{base64_str}"
         if isinstance(obj, datetime.datetime):
             return obj.isoformat()
         if isinstance(obj, datetime.date):
@@ -80,23 +99,51 @@ class JSONSerializer(json.JSONEncoder):
             return repr(obj)
         if isinstance(obj, Decimal):
             return str(obj)
-        if np and isinstance(obj, np.ndarray):
-            return obj.tolist()
         if pd and isinstance(obj, pd.Series):
             return obj.to_dict()
+        if np and isinstance(obj, np.ndarray):
+            return obj.tolist()
+        if callable(obj) or asyncio.iscoroutine(obj):
+            import warnings
+
+            func_name = getattr(obj, "__name__", str(obj))
+            warnings.warn(
+                f"Attempting to serialize function/coroutine '{func_name}' which is not supported"
+            )
+            raise ValueError(
+                f"Attempting to serialize function/coroutine '{func_name}' which is not supported"
+            )
         return super().default(obj)
 
 
 def json_deserializer(dct):
     for key, value in dct.items():
         if isinstance(value, str):
-            # Base64 decoding
-            if value.startswith("b64:"):
-                base64_str = value[4:]  # Remove the 'b64:' prefix
+            # Try to parse JSON strings that might be from pandas Series
+            if value.startswith("{") and value.endswith("}"):
                 try:
-                    dct[key] = base64.b64decode(base64_str)
+                    dct[key] = loads(value)
+                    continue
+                except json.JSONDecodeError:
+                    pass
+
+            # Data URL decoding (handles bytes, bytearray, memoryview, BytesIO, and Images)
+            if value.startswith("data:"):
+                try:
+                    mime_type, b64data = value[5:].split(";base64,", 1)
+                    binary_data = base64.b64decode(b64data)
+
+                    if mime_type.startswith("image/") and Image:
+                        dct[key] = Image.open(BytesIO(binary_data))
+                    elif mime_type == "application/octet-stream":
+                        dct[key] = binary_data
+                    continue
                 except (ValueError, TypeError):
                     pass
+
+            # Non-serializable function references (skip conversion)
+            if value.startswith("<non-serializable-function:"):
+                continue
 
             # UUID conversion
             if re.match(
@@ -106,38 +153,48 @@ def json_deserializer(dct):
             ):
                 try:
                     dct[key] = uuid.UUID(value)
+                    continue
                 except ValueError:
                     pass
 
-            # Datetime conversion
+            # Datetime patterns
             datetime_patterns = [
+                # ISO format with timezone
                 (
-                    r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?$",
-                    "%Y-%m-%dT%H:%M:%S.%f",
-                    lambda dt: dt,
+                    r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?$",
+                    lambda v: datetime.datetime.fromisoformat(v.replace("Z", "+00:00")),
                 ),
+                # Date and time
                 (
-                    r"^(\d{2,4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2})$",
-                    "%Y-%m-%d %H:%M:%S",
-                    lambda dt: dt,
+                    r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d+)?$",
+                    lambda v: datetime.datetime.strptime(
+                        v, "%Y-%m-%d %H:%M:%S.%f" if "." in v else "%Y-%m-%d %H:%M:%S"
+                    ),
                 ),
-                (r"^(\d{2,4}-\d{2}-\d{2})$", "%Y-%m-%d", lambda dt: dt.date()),
+                # Date only
                 (
-                    r"^(\d{2}:\d{2}:\d{2}(\.\d+))$",
-                    "%H:%M:%S.%f",
-                    lambda dt: dt.time(),
+                    r"^\d{4}-\d{2}-\d{2}$",
+                    lambda v: datetime.datetime.strptime(v, "%Y-%m-%d").date(),
                 ),
-                (r"^(\d{2}:\d{2}:\d{2})$", "%H:%M:%S", lambda dt: dt.time()),
+                # Time with microseconds
+                (
+                    r"^\d{2}:\d{2}:\d{2}\.\d+$",
+                    lambda v: datetime.datetime.strptime(v, "%H:%M:%S.%f").time(),
+                ),
+                # Time without microseconds
+                (
+                    r"^\d{2}:\d{2}:\d{2}$",
+                    lambda v: datetime.datetime.strptime(v, "%H:%M:%S").time(),
+                ),
             ]
 
-            for reg, pattern, formatter in datetime_patterns:
-                if re.match(reg, value):
+            for pattern, parser in datetime_patterns:
+                if re.match(pattern, value):
                     try:
-                        dt = datetime.datetime.strptime(value, pattern)
-                        dct[key] = formatter(dt)
-                        break  # Exit loop after successful conversion
+                        dct[key] = parser(value)
+                        break
                     except ValueError:
-                        continue  # Try next pattern
+                        continue
 
     return dct
 
