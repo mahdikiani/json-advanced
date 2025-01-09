@@ -26,3 +26,13 @@ def test_pandas_serialization():
         deserialized["series"] = loads(deserialized["series"])
     assert isinstance(deserialized["series"], dict)
     assert deserialized["series"] == {"a": 1, "b": 2, "c": 3}
+
+
+@pytest.mark.skipif(not pytest.importorskip("pandas"), reason="pandas not installed")
+def test_pandas_series_serialization():
+    import pandas as pd
+
+    series = pd.Series([1, 2, 3], index=["a", "b", "c"])
+    json_string = dumps({"series": series})
+    deserialized = loads(json_string)
+    assert deserialized["series"] == {"a": 1, "b": 2, "c": 3}

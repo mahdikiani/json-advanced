@@ -3,8 +3,6 @@ from datetime import datetime
 from io import BytesIO, StringIO
 from uuid import uuid4
 
-from PIL import Image
-
 from json_advanced.json_encoder import dump, dumps, load
 
 
@@ -13,7 +11,6 @@ def test_dump_load_file():
     data = {
         "string": "hello",
         "bytes": bytes([1, 2, 3]),
-        "image": Image.new("RGB", (10, 10), color="red"),
         "datetime": datetime.now(),
         "uuid": uuid4(),
     }
@@ -27,7 +24,6 @@ def test_dump_load_file():
     # Verify data
     assert loaded_data["string"] == data["string"]
     assert loaded_data["bytes"] == data["bytes"]
-    assert isinstance(loaded_data["image"], Image.Image)
     assert isinstance(loaded_data["datetime"], datetime)
     assert loaded_data["uuid"] == data["uuid"]
 

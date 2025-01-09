@@ -3,8 +3,9 @@ from decimal import Decimal
 from pathlib import Path
 from uuid import UUID
 
-from json_advanced.json_encoder import dumps, loads
 import pytest
+
+from json_advanced.json_encoder import dumps, loads
 
 
 def test_basic_types():
@@ -105,16 +106,6 @@ def test_basic_python_types():
 
     frozen_set = frozenset([10, 11, 12])
     assert sorted(loads(dumps(list(frozen_set)))) == [10, 11, 12]
-
-
-@pytest.mark.skipif(not pytest.importorskip("pandas"), reason="pandas not installed")
-def test_pandas_series_serialization():
-    import pandas as pd
-
-    series = pd.Series([1, 2, 3], index=["a", "b", "c"])
-    json_string = dumps({"series": series})
-    deserialized = loads(json_string)
-    assert deserialized["series"] == {"a": 1, "b": 2, "c": 3}
 
 
 def test_callable_serialization():
