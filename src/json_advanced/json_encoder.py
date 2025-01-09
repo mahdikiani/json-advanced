@@ -14,7 +14,8 @@ except ImportError:
     BaseModel = None
 
 try:
-    from bson import Decimal128, ObjectId
+    from bson import ObjectId
+    from bson.decimal128 import Decimal128
 except ImportError:
     Decimal128 = None
     ObjectId = None
